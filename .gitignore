@@ -1,2 +1,4 @@
 venv/
 .env
+finanzas.db
+finanzas.db-journal

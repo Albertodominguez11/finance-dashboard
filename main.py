@@ -42,7 +42,7 @@ for empresa in empresas:
 
     if resultado:
         for dia in resultado: 
-            print(f"{empresa} | {dia['fecha']} | {dia['cierre']}")
+            #print(f"{empresa} | {dia['fecha']} | {dia['cierre']}")
             cursor.execute("""
                 INSERT INTO precios (empresa, fecha, cierre)
                 VALUES (?, ?, ?)
