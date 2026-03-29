@@ -2,6 +2,18 @@ import requests
 import os
 from dotenv import load_dotenv
 import time
+import sqlite3
+
+conexion = sqlite3.connect("finanzas.db") #conectate a la BBDD que esta en el archivo finanzas.db (si no existe lo crea)
+cursor = conexion.cursor() #intermediario entre la BBDD y python
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS precios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        empresa TEXT,
+        fecha TEXT,
+        cierre REAL
+    )
+""")
 
 load_dotenv()
 
@@ -23,8 +35,6 @@ def obtener_datos(simbolo, api_key):
         
     return historico
 
-
-
 empresas = ["AAPL", "GOOGL", "MSFT"]
 
 for empresa in empresas:
@@ -33,6 +43,13 @@ for empresa in empresas:
     if resultado:
         for dia in resultado: 
             print(f"{empresa} | {dia['fecha']} | {dia['cierre']}")
+            cursor.execute("""
+                INSERT INTO precios (empresa, fecha, cierre)
+                VALUES (?, ?, ?)
+            """, (empresa, dia['fecha'], dia['cierre']))
     else:
         print(f"{empresa} | sin datos disponibles")
     time.sleep(15) #para que la API nos permita acceder
+
+conexion.commit()
+conexion.close()
