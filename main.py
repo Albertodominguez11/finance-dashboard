@@ -3,6 +3,10 @@ import os
 from dotenv import load_dotenv
 import time
 import sqlite3
+from datetime import date
+
+load_dotenv()
+api_key = os.getenv("ALPHA_VANTAGE_KEY")
 
 conexion = sqlite3.connect("finanzas.db") #conectate a la BBDD que esta en el archivo finanzas.db (si no existe lo crea)
 cursor = conexion.cursor() #intermediario entre la BBDD y python
@@ -14,10 +18,6 @@ cursor.execute("""
         cierre REAL
     )
 """)
-
-load_dotenv()
-
-api_key = os.getenv("ALPHA_VANTAGE_KEY")
 
 def obtener_datos(simbolo, api_key):
     url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={simbolo}&apikey={api_key}"
@@ -35,21 +35,43 @@ def obtener_datos(simbolo, api_key):
         
     return historico
 
+def guardar_datos(empresa, historico):
+    for dia in historico:
+        cursor.execute("""
+            INSERT INTO precios (empresa, fecha, cierre)
+            VALUES (?, ?, ?)
+        """, (empresa, dia['fecha'], dia['cierre']))
+
+def leer_datos(simbolo):
+    cursor.execute("""
+        SELECT * FROM precios WHERE empresa = ?
+    """, (simbolo,))
+    resultados = cursor.fetchall()
+    return resultados
+
+def tengo_datos_hoy(simbolo):
+    hoy = date.today()
+    cursor.execute("""
+        SELECT * FROM precios WHERE empresa = ? AND fecha = ?
+    """, (simbolo, hoy))
+    resultado = cursor.fetchone()
+    return resultado is not None
+
 empresas = ["AAPL", "GOOGL", "MSFT"]
 
 for empresa in empresas:
-    resultado = obtener_datos(empresa, api_key)
-
-    if resultado:
-        for dia in resultado: 
-            #print(f"{empresa} | {dia['fecha']} | {dia['cierre']}")
-            cursor.execute("""
-                INSERT INTO precios (empresa, fecha, cierre)
-                VALUES (?, ?, ?)
-            """, (empresa, dia['fecha'], dia['cierre']))
+    if tengo_datos_hoy(empresa):
+        print(f"{empresa} | ya tenemos datos de hoy, leyendo de la BBDD")
+        resultado = leer_datos(empresa)
+        for fila in resultado:
+            print(fila)
     else:
-        print(f"{empresa} | sin datos disponibles")
-    time.sleep(15) #para que la API nos permita acceder
+        resultado = obtener_datos(empresa, api_key)
+        if resultado:
+            guardar_datos(empresa, resultado)
+        else:
+            print(f"{empresa} | sin datos disponibles")
+        time.sleep(15)
 
 conexion.commit()
 conexion.close()
