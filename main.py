@@ -31,21 +31,6 @@ for empresa in empresas:
     resultado = obtener_datos(empresa, api_key)
 
     if resultado:
-        print(f"{empresa} | {resultado['fecha']} | {resultado['cierre']}")
-    else:
-        print(f"{empresa} | sin datos disponibles")
-    time.sleep(15) #para que la API nos permita acceder
-
-    ultima_fecha = list(serie.keys())[0]
-    precio_cierre_ultima_fecha = serie[ultima_fecha]["4. close"]
-    return {"fecha": ultima_fecha, "cierre": precio_cierre_ultima_fecha}
-
-
-
-for empresa in empresas:
-    resultado = obtener_datos(empresa, api_key)
-
-    if resultado:
         for dia in resultado: 
             print(f"{empresa} | {dia['fecha']} | {dia['cierre']}")
     else:
