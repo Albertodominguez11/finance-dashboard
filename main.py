@@ -42,11 +42,14 @@ def guardar_datos(empresa, historico):
             VALUES (?, ?, ?)
         """, (empresa, dia['fecha'], dia['cierre']))
 
-def leer_datos(simbolo):
-    cursor.execute("""
+def leer_datos(simbolo): #cambio por varios hilos
+    conn = sqlite3.connect("finanzas.db")
+    cur = conn.cursor()
+    cur.execute("""
         SELECT * FROM precios WHERE empresa = ?
     """, (simbolo,))
-    resultados = cursor.fetchall()
+    resultados = cur.fetchall()
+    conn.close()
     return resultados
 
 def tengo_datos_hoy(simbolo):
