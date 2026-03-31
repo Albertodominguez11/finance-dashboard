@@ -57,21 +57,23 @@ def tengo_datos_hoy(simbolo):
     resultado = cursor.fetchone()
     return resultado is not None
 
-empresas = ["AAPL", "GOOGL", "MSFT"]
 
-for empresa in empresas:
-    if tengo_datos_hoy(empresa):
-        print(f"{empresa} | ya tenemos datos de hoy, leyendo de la BBDD")
-        resultado = leer_datos(empresa)
-        for fila in resultado:
-            print(fila)
-    else:
-        resultado = obtener_datos(empresa, api_key)
-        if resultado:
-            guardar_datos(empresa, resultado)
+if __name__ == "__main__":
+    empresas = ["AAPL", "GOOGL", "MSFT"]
+
+    for empresa in empresas:
+        if tengo_datos_hoy(empresa):
+            print(f"{empresa} | ya tenemos datos de hoy, leyendo de la BBDD")
+            resultado = leer_datos(empresa)
+            for fila in resultado:
+                print(fila)
         else:
-            print(f"{empresa} | sin datos disponibles")
-        time.sleep(15)
+            resultado = obtener_datos(empresa, api_key)
+            if resultado:
+                guardar_datos(empresa, resultado)
+            else:
+                print(f"{empresa} | sin datos disponibles")
+            time.sleep(15)
 
-conexion.commit()
-conexion.close()
+    conexion.commit()
+    conexion.close()
